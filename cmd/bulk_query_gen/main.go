@@ -20,6 +20,7 @@ import (
 	"os"
 	"sort"
 	"time"
+	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/tsdb"
 )
 
 const (
@@ -44,6 +45,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":       mongodb.NewMongoDevopsSingleHost,
 			"opentsdb":    opentsdb.NewOpenTSDBDevopsSingleHost,
 			"timescaledb": timescaledb.NewTimescaleDevopsSingleHost,
+			"tsdb": tsdb.NewTSDBDevopsSingleHost,
 		},
 		DevOpsOneHostTwelveHours: {
 			"cassandra":   cassandra.NewCassandraDevopsSingleHost12hr,
@@ -53,6 +55,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":       mongodb.NewMongoDevopsSingleHost12hr,
 			"opentsdb":    opentsdb.NewOpenTSDBDevopsSingleHost12hr,
 			"timescaledb": timescaledb.NewTimescaleDevopsSingleHost12hr,
+			"tsdb": tsdb.NewTSDBDevopsSingleHost12hr,
 		},
 		DevOpsEightHostsOneHour: {
 			"cassandra":   cassandra.NewCassandraDevops8Hosts,
@@ -62,6 +65,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":       mongodb.NewMongoDevops8Hosts1Hr,
 			"opentsdb":    opentsdb.NewOpenTSDBDevops8Hosts,
 			"timescaledb": timescaledb.NewTimescaleDevops8Hosts1Hr,
+			"tsdb": tsdb.NewTSDBDevops8Hosts,
 		},
 		DevOpsGroupBy: {
 			"cassandra":   cassandra.NewCassandraDevopsGroupBy,
@@ -69,6 +73,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"influx-flux-http": influxdb.NewFluxDevopsGroupBy,
 			"influx-http": influxdb.NewInfluxQLDevopsGroupBy,
 			"timescaledb": timescaledb.NewTimescaleDevopsGroupby,
+			"tsdb": tsdb.NewTSDBDevopsGroupBy,
 		},
 	},
 	Iot: {
@@ -124,7 +129,7 @@ func init() {
 		}
 	}
 
-	flag.StringVar(&format, "format", "influx-http", "Format to emit. (Choices are in the use case matrix.)")
+	flag.StringVar(&format, "format", "es-http", "Format to emit. (Choices are in the use case matrix.)")
 	flag.StringVar(&useCase, "use-case", "devops", "Use case to model. (Choices are in the use case matrix.)")
 	flag.StringVar(&queryType, "query-type", "", "Query type. (Choices are in the use case matrix.)")
 
