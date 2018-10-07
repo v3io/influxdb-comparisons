@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/v3io/v3io-tsdb/pkg/aggregate"
 	tsdbConfig "github.com/v3io/v3io-tsdb/pkg/config"
@@ -14,13 +15,13 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"github.com/v3io/v3io-tsdb/pkg/performance"
 )
 
 // Program option vars:
 var (
 	itemLimit      int64
 	workers        int
+	printInterval  int64
 	serverPath     string
 	dbPath         string
 	configFilePath string
@@ -31,10 +32,11 @@ var (
 	inputDone    chan struct{}
 	workersGroup sync.WaitGroup
 
-	tsdbAdapter   *tsdb.V3ioAdapter
-	tsdbAppender  tsdb.Appender
-	batchTSDBChan chan *TSDBDataPoint
-	v3ioConf      *tsdbConfig.V3ioConfig
+	tsdbAdapter       *tsdb.V3ioAdapter
+	tsdbAppender      tsdb.Appender
+	batchTSDBChan     chan *TSDBDataPoint
+	batchTSDBChannels []chan *TSDBDataPoint
+	v3ioConf          *tsdbConfig.V3ioConfig
 )
 
 type TSDBDataPoint struct {
@@ -46,9 +48,10 @@ type TSDBDataPoint struct {
 
 func init() {
 	flag.IntVar(&workers, "workers", 1, "Number of parallel requests to make.")
-	flag.Int64Var(&itemLimit, "itemsLimit", -1, "Number of parallel requests to make.")
+	flag.Int64Var(&itemLimit, "item-limit", -1, "Number of parallel requests to make.")
+	flag.Int64Var(&printInterval, "print-interval", 1000000, "Number of records after which to print a log")
 	flag.StringVar(&serverPath, "server", "", "V3IO Service URL - username:password@ip:port/container")
-	flag.StringVar(&dbPath, "dbPath", "", "sub path for the TSDB, inside the container")
+	flag.StringVar(&dbPath, "table-path", "", "sub path for the TSDB, inside the container")
 	flag.StringVar(&configFilePath, "config", "", "path to yaml config file")
 
 	flag.Parse()
@@ -78,44 +81,50 @@ func init() {
 		if slash == -1 || len(serverPath) <= slash+1 {
 			log.Fatal("missing container name in V3IO URL")
 		}
-		v3ioConf.V3ioUrl = serverPath[0:slash]
+		v3ioConf.WebApiEndpoint = serverPath[0:slash]
 		v3ioConf.Container = serverPath[slash+1:]
 	}
 	if dbPath != "" {
-		v3ioConf.Path = dbPath
+		v3ioConf.TablePath = dbPath
 	}
 
-
-	log.Printf("conf is: %v", v3ioConf)
+	fmt.Println("v3io conf", v3ioConf)
 	batchTSDBChan = make(chan *TSDBDataPoint, workers)
+	batchTSDBChannels = make([]chan *TSDBDataPoint, workers)
+	for i := 0; i < workers; i++ {
+		batchTSDBChannels[i] = make(chan *TSDBDataPoint, 1)
+	}
 }
 
 func main() {
-	// Measure performance
-	metricReporter, _ := performance.DefaultReporterInstance()
-	metricReporter.Start()
-	defer metricReporter.Stop()
+	//// Measure performance
+	//metricReporter, _ := performance.DefaultReporterInstance()
+	//metricReporter.Start()
+	//defer metricReporter.Stop()
 
 	createTSDB()
 
-	tsdbAdapter, err := tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
-	if err != nil {
-		log.Fatalf("failed to create TSDB adapter: %v", err)
-	}
-
-	tsdbAppender, err = tsdbAdapter.Appender()
-	if err != nil {
-		log.Fatalf("failed to create tsdb appender: %v", err)
-	}
+	//tsdbAdapter, err := tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
+	//if err != nil {
+	//	log.Fatalf("failed to create TSDB adapter: %v", err)
+	//}
+	//
+	//tsdbAppender, err = tsdbAdapter.Appender()
+	//if err != nil {
+	//	log.Fatalf("failed to create tsdb appender: %v", err)
+	//}
 
 	for i := 0; i < workers; i++ {
 		workersGroup.Add(1)
-		go processRecords()
+		go processRecords(i)
 	}
 
 	start := time.Now()
 	itemsRead, bytesRead := scan()
 	close(batchTSDBChan)
+	for i := 0; i < workers; i++ {
+		close(batchTSDBChannels[i])
+	}
 	workersGroup.Wait()
 
 	end := time.Now()
@@ -138,14 +147,20 @@ func scan() (int64, int64) {
 		}
 
 		line := scanner.Text()
+
 		data, err := stringToTSDBData(line)
 		if err != nil {
 			log.Fatal(err)
 		}
-		batchTSDBChan <- data
+		//		batchTSDBChan <- data
+		_, _, hash := data.Labels.GetKey()
+		batchTSDBChannels[hash%uint64(workers)] <- data
 
 		itemsRead++
 		bytesRead += int64(len(scanner.Bytes()))
+		if itemsRead%printInterval == 0 {
+			log.Printf("read %v events\n", itemsRead)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -158,9 +173,22 @@ func scan() (int64, int64) {
 	return itemsRead, bytesRead
 }
 
-func processRecords() {
+func processRecords(number int) {
 	var total int64
-	for data := range batchTSDBChan {
+	var events int
+
+	tsdbAdapter, err := tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
+	if err != nil {
+		log.Fatalf("failed to create TSDB adapter: %v", err)
+	}
+
+	tsdbAppender, err := tsdbAdapter.Appender()
+	if err != nil {
+		log.Fatalf("failed to create tsdb appender: %v", err)
+	}
+
+	for data := range batchTSDBChannels[number] {
+		events++
 		start := time.Now().UnixNano()
 		//log.Printf("labels: %v", data.Labels)
 		//log.Printf("time: %v", data.Timestamp)
@@ -177,8 +205,8 @@ func processRecords() {
 		//log.Printf("got ref: %v", ref)
 	}
 
-	tsdbAppender.WaitForCompletion(0)
-	log.Println("Process time: ", total)
+	tsdbAppender.WaitForCompletion(time.Duration(5))
+	log.Println("Process time: ", total, "number of events:", events)
 	workersGroup.Done()
 }
 
@@ -201,7 +229,7 @@ func stringToTSDBData(data string) (*TSDBDataPoint, error) {
 
 	return &TSDBDataPoint{
 		MetricsName: metricName,
-		Labels:      tsdbUtils.FromStrings(labels...),
+		Labels:      tsdbUtils.LabelsFromStrings(labels...),
 		Value:       val,
 		Timestamp:   timestamp}, nil
 }
@@ -225,11 +253,11 @@ func createTSDB() {
 	}
 
 	tableSchema := tsdbConfig.TableSchema{
-		Version:             0,
-		RollupLayers:        []tsdbConfig.Rollup{defaultRollup},
-		ShardingBuckets:     8,
-		PartitionerInterval: "290h",
-		ChunckerInterval:    "10h",
+		Version:              0,
+		RollupLayers:         []tsdbConfig.Rollup{defaultRollup},
+		ShardingBucketsCount: 8,
+		PartitionerInterval:  "290h",
+		ChunckerInterval:     "10h",
 	}
 
 	fields, err := aggregate.SchemaFieldFromString(rollups, "v")

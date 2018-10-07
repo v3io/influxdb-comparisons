@@ -2,15 +2,15 @@ package influxdb
 
 import (
 	"fmt"
-	"net/url"
 	bulkQuerygen "github.com/influxdata/influxdb-comparisons/bulk_query_gen"
+	"net/url"
 )
 
 type Language bool
 
 const (
 	InfluxQL Language = false
-	Flux Language = true
+	Flux     Language = true
 )
 
 func (lang Language) String() string {
@@ -22,7 +22,7 @@ func (lang Language) String() string {
 }
 
 type InfluxCommon struct {
-	language Language
+	language     Language
 	DatabaseName string
 }
 

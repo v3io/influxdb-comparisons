@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/v3io/v3io-tsdb/pkg/tsdb"
-	tsdbConfig "github.com/v3io/v3io-tsdb/pkg/config"
-	"flag"
-	"log"
-	"strings"
-	"os"
 	"bufio"
 	"encoding/gob"
+	"flag"
+	"fmt"
+	tsdbConfig "github.com/v3io/v3io-tsdb/pkg/config"
+	"github.com/v3io/v3io-tsdb/pkg/tsdb"
 	"io"
+	"log"
+	"os"
+	"sort"
+	"strings"
 	"sync"
 	"time"
-	"fmt"
-	"sort"
 )
 
 // Program option vars:
@@ -47,7 +47,7 @@ const allQueriesLabel = "all queries"
 func init() {
 	flag.IntVar(&workers, "workers", 1, "Number of parallel requests to make.")
 	flag.StringVar(&serverPath, "server", "", "V3IO Service URL - username:password@ip:port/container")
-	flag.StringVar(&dbPath, "dbPath", "", "sub path for the TSDB, inside the container")
+	flag.StringVar(&dbPath, "table-path", "", "sub path for the TSDB, inside the container")
 	flag.StringVar(&configFilePath, "config", "", "path to yaml config file")
 	flag.StringVar(&file, "file", "", "Input file")
 	flag.Int64Var(&limit, "limit", -1, "Limit the number of queries to send.")
@@ -89,11 +89,11 @@ func init() {
 		if slash == -1 || len(serverPath) <= slash+1 {
 			log.Fatal("missing container name in V3IO URL")
 		}
-		v3ioConf.V3ioUrl = serverPath[0:slash]
+		v3ioConf.WebApiEndpoint = serverPath[0:slash]
 		v3ioConf.Container = serverPath[slash+1:]
 	}
 	if dbPath != "" {
-		v3ioConf.Path = dbPath
+		v3ioConf.TablePath = dbPath
 	}
 
 	tsdbAdapter, err = tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
@@ -157,7 +157,7 @@ func scan() {
 	dec := gob.NewDecoder(input)
 
 	fmt.Printf("start scanning - limit: %v\n", limit)
-	for n := int64(0); limit < 0 || n <= limit; n ++ {
+	for n := int64(0); limit < 0 || n <= limit; n++ {
 		q := queryPool.Get().(*TsdbQuery)
 		err := dec.Decode(q)
 		if err == io.EOF {
@@ -194,7 +194,7 @@ func processQueries() {
 		queryPool.Put(q)
 
 		stat := statPool.Get().(*Stat)
-		stat.Init(q.HumanLabel, float64(after.UnixNano()-before.UnixNano()) / 1000000)
+		stat.Init(q.HumanLabel, float64(after.UnixNano()-before.UnixNano())/1000000)
 		statChan <- stat
 
 		if querySet.Err() != nil {

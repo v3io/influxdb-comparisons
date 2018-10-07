@@ -1,8 +1,8 @@
 package common
 
 import (
-	"io"
 	"fmt"
+	"io"
 	"time"
 )
 

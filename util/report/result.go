@@ -3,8 +3,8 @@ package report
 import (
 	"fmt"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 )
 
 // ReportParams is holder for common parameters across load and query reports

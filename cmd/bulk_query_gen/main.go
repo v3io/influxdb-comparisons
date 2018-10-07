@@ -15,12 +15,12 @@ import (
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/mongodb"
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/opentsdb"
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/timescaledb"
+	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/tsdb"
 	"log"
 	"math/rand"
 	"os"
 	"sort"
 	"time"
-	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/tsdb"
 )
 
 const (
@@ -38,51 +38,51 @@ const (
 var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGeneratorMaker{
 	DevOps: {
 		DevOpsOneHostOneHour: {
-			"cassandra":   cassandra.NewCassandraDevopsSingleHost,
-			"es-http":     elasticsearch.NewElasticSearchDevopsSingleHost,
+			"cassandra":        cassandra.NewCassandraDevopsSingleHost,
+			"es-http":          elasticsearch.NewElasticSearchDevopsSingleHost,
 			"influx-flux-http": influxdb.NewFluxDevopsSingleHost,
-			"influx-http": influxdb.NewInfluxQLDevopsSingleHost,
-			"mongo":       mongodb.NewMongoDevopsSingleHost,
-			"opentsdb":    opentsdb.NewOpenTSDBDevopsSingleHost,
-			"timescaledb": timescaledb.NewTimescaleDevopsSingleHost,
-			"tsdb": tsdb.NewTSDBDevopsSingleHost,
+			"influx-http":      influxdb.NewInfluxQLDevopsSingleHost,
+			"mongo":            mongodb.NewMongoDevopsSingleHost,
+			"opentsdb":         opentsdb.NewOpenTSDBDevopsSingleHost,
+			"timescaledb":      timescaledb.NewTimescaleDevopsSingleHost,
+			"tsdb":             tsdb.NewTSDBDevopsSingleHost,
 		},
 		DevOpsOneHostTwelveHours: {
-			"cassandra":   cassandra.NewCassandraDevopsSingleHost12hr,
-			"es-http":     elasticsearch.NewElasticSearchDevopsSingleHost12hr,
+			"cassandra":        cassandra.NewCassandraDevopsSingleHost12hr,
+			"es-http":          elasticsearch.NewElasticSearchDevopsSingleHost12hr,
 			"influx-flux-http": influxdb.NewFluxDevopsSingleHost12hr,
-			"influx-http": influxdb.NewInfluxQLDevopsSingleHost12hr,
-			"mongo":       mongodb.NewMongoDevopsSingleHost12hr,
-			"opentsdb":    opentsdb.NewOpenTSDBDevopsSingleHost12hr,
-			"timescaledb": timescaledb.NewTimescaleDevopsSingleHost12hr,
-			"tsdb": tsdb.NewTSDBDevopsSingleHost12hr,
+			"influx-http":      influxdb.NewInfluxQLDevopsSingleHost12hr,
+			"mongo":            mongodb.NewMongoDevopsSingleHost12hr,
+			"opentsdb":         opentsdb.NewOpenTSDBDevopsSingleHost12hr,
+			"timescaledb":      timescaledb.NewTimescaleDevopsSingleHost12hr,
+			"tsdb":             tsdb.NewTSDBDevopsSingleHost12hr,
 		},
 		DevOpsEightHostsOneHour: {
-			"cassandra":   cassandra.NewCassandraDevops8Hosts,
-			"es-http":     elasticsearch.NewElasticSearchDevops8Hosts,
+			"cassandra":        cassandra.NewCassandraDevops8Hosts,
+			"es-http":          elasticsearch.NewElasticSearchDevops8Hosts,
 			"influx-flux-http": influxdb.NewFluxDevops8Hosts,
-			"influx-http": influxdb.NewInfluxQLDevops8Hosts,
-			"mongo":       mongodb.NewMongoDevops8Hosts1Hr,
-			"opentsdb":    opentsdb.NewOpenTSDBDevops8Hosts,
-			"timescaledb": timescaledb.NewTimescaleDevops8Hosts1Hr,
-			"tsdb": tsdb.NewTSDBDevops8Hosts,
+			"influx-http":      influxdb.NewInfluxQLDevops8Hosts,
+			"mongo":            mongodb.NewMongoDevops8Hosts1Hr,
+			"opentsdb":         opentsdb.NewOpenTSDBDevops8Hosts,
+			"timescaledb":      timescaledb.NewTimescaleDevops8Hosts1Hr,
+			"tsdb":             tsdb.NewTSDBDevops8Hosts,
 		},
 		DevOpsGroupBy: {
-			"cassandra":   cassandra.NewCassandraDevopsGroupBy,
-			"es-http":     elasticsearch.NewElasticSearchDevopsGroupBy,
+			"cassandra":        cassandra.NewCassandraDevopsGroupBy,
+			"es-http":          elasticsearch.NewElasticSearchDevopsGroupBy,
 			"influx-flux-http": influxdb.NewFluxDevopsGroupBy,
-			"influx-http": influxdb.NewInfluxQLDevopsGroupBy,
-			"timescaledb": timescaledb.NewTimescaleDevopsGroupby,
-			"tsdb": tsdb.NewTSDBDevopsGroupBy,
+			"influx-http":      influxdb.NewInfluxQLDevopsGroupBy,
+			"timescaledb":      timescaledb.NewTimescaleDevopsGroupby,
+			"tsdb":             tsdb.NewTSDBDevopsGroupBy,
 		},
 	},
 	Iot: {
 		IotOneHomeTwelveHours: {
 			"influx-flux-http": influxdb.NewFluxIotSingleHost,
-			"influx-http": influxdb.NewInfluxQLIotSingleHost,
-			"timescaledb": timescaledb.NewTimescaleIotSingleHost,
-			"cassandra":   cassandra.NewCassandraIotSingleHost,
-			"mongo":       mongodb.NewMongoIotSingleHost,
+			"influx-http":      influxdb.NewInfluxQLIotSingleHost,
+			"timescaledb":      timescaledb.NewTimescaleIotSingleHost,
+			"cassandra":        cassandra.NewCassandraIotSingleHost,
+			"mongo":            mongodb.NewMongoIotSingleHost,
 		},
 	},
 }
@@ -129,7 +129,7 @@ func init() {
 		}
 	}
 
-	flag.StringVar(&format, "format", "es-http", "Format to emit. (Choices are in the use case matrix.)")
+	flag.StringVar(&format, "format", "influx-http", "Format to emit. (Choices are in the use case matrix.)")
 	flag.StringVar(&useCase, "use-case", "devops", "Use case to model. (Choices are in the use case matrix.)")
 	flag.StringVar(&queryType, "query-type", "", "Query type. (Choices are in the use case matrix.)")
 

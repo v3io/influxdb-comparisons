@@ -12,7 +12,7 @@ import (
 // InfluxDevops produces Influx-specific queries for all the devops query types.
 type InfluxIot struct {
 	InfluxCommon
-	AllInterval  bulkQuerygen.TimeInterval
+	AllInterval bulkQuerygen.TimeInterval
 }
 
 // NewInfluxDevops makes an InfluxDevops object ready to generate Queries.
@@ -67,12 +67,12 @@ func (d *InfluxIot) averageTemperatureDayByHourNHomes(qi bulkQuerygen.Query, sca
 	if d.language == InfluxQL {
 		query = fmt.Sprintf("SELECT mean(temperature) from air_condition_room where (%s) and time >= '%s' and time < '%s' group by time(1h)", combinedHomesClause, interval.StartString(), interval.EndString())
 	} else {
-		query = fmt.Sprintf(`from(db:"%s") ` +
-			`|> range(start:%s, stop:%s) ` +
-			`|> filter(fn:(r) => r._measurement == "air_condition_room" and r._field == "temperature" and (%s)) ` +
-			`|> keep(columns:["_start", "_stop", "_time", "_value"]) ` +
-			`|> window(every:1h) ` +
-			`|> mean() ` +
+		query = fmt.Sprintf(`from(db:"%s") `+
+			`|> range(start:%s, stop:%s) `+
+			`|> filter(fn:(r) => r._measurement == "air_condition_room" and r._field == "temperature" and (%s)) `+
+			`|> keep(columns:["_start", "_stop", "_time", "_value"]) `+
+			`|> window(every:1h) `+
+			`|> mean() `+
 			`|> yield()`,
 			d.DatabaseName,
 			interval.StartString(), interval.EndString(),

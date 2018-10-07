@@ -1,11 +1,11 @@
 package tsdb
 
 import (
-	bulkQuerygen "github.com/influxdata/influxdb-comparisons/bulk_query_gen"
-	"time"
-	"math/rand"
 	"fmt"
+	bulkQuerygen "github.com/influxdata/influxdb-comparisons/bulk_query_gen"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 type TSDBDevops struct {
@@ -19,8 +19,8 @@ func newTSDBDevopsCommon(dbConfig bulkQuerygen.DatabaseConfig, start, end time.T
 	}
 
 	return &TSDBDevops{
-		dbPath: dbConfig["database-name"],
-		AllInterval:  bulkQuerygen.NewTimeInterval(start, end),
+		dbPath:      dbConfig["database-name"],
+		AllInterval: bulkQuerygen.NewTimeInterval(start, end),
 	}
 }
 
@@ -84,7 +84,7 @@ func (d *TSDBDevops) maxCPUUsageHourByMinuteNHosts(qi bulkQuerygen.Query, scaleV
 	// get time in millis
 	q.TimeStart = interval.Start.UnixNano() / int64(time.Millisecond)
 	q.TimeEnd = interval.End.UnixNano() / int64(time.Millisecond)
-	q.Step = int64(time.Minute/time.Millisecond) // 1m interval
+	q.Step = int64(time.Minute / time.Millisecond) // 1m interval
 	q.Filter = []byte(filter)
 }
 
@@ -104,5 +104,5 @@ func (d *TSDBDevops) MeanCPUUsageDayByHourAllHostsGroupbyHost(qi bulkQuerygen.Qu
 	// get time in millis
 	q.TimeStart = interval.Start.UnixNano() / int64(time.Millisecond)
 	q.TimeEnd = interval.End.UnixNano() / int64(time.Millisecond)
-	q.Step = int64(time.Hour/time.Millisecond)
+	q.Step = int64(time.Hour / time.Millisecond)
 }

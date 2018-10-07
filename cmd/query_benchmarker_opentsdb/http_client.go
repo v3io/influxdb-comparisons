@@ -21,7 +21,7 @@ type HTTPClient struct {
 
 // HTTPClientDoOptions wraps options uses when calling `Do`.
 type HTTPClientDoOptions struct {
-	Debug int
+	Debug                int
 	PrettyPrintResponses bool
 }
 
@@ -99,7 +99,7 @@ func (w *HTTPClient) Do(q *Query, opts *HTTPClientDoOptions) (lag float64, err e
 			// outside the requested time bounds, here we prune
 			// those values:
 			type Payload struct {
-				Outputs []struct{
+				Outputs []struct {
 					// actually a slice of {int64,float64}
 					// but go's json does not support
 					// inline fields:
@@ -119,7 +119,7 @@ func (w *HTTPClient) Do(q *Query, opts *HTTPClientDoOptions) (lag float64, err e
 				startMillis := q.StartTimestamp / 1e6
 				endMillis := q.EndTimestamp / 1e6
 				if len(x.Outputs) > 0 {
-					for i := range x.Outputs{
+					for i := range x.Outputs {
 						filteredPoints := make([][]interface{}, 0, len(x.Outputs[i].Dps))
 						for _, untypedValue := range x.Outputs[i].Dps {
 							// json does not have integers, so force it:
@@ -128,7 +128,7 @@ func (w *HTTPClient) Do(q *Query, opts *HTTPClientDoOptions) (lag float64, err e
 							// include OpenTSDB values only if they are within the requested time range,
 							// and convert them to a UTC RFC3339 string for human-friendliness:
 							if timestampMillis >= startMillis && timestampMillis <= endMillis {
-								timestampNanos := timestampMillis*1e6
+								timestampNanos := timestampMillis * 1e6
 								humanFriendly := []interface{}{
 									time.Unix(0, timestampNanos).UTC().Format(time.RFC3339),
 									untypedValue[1],

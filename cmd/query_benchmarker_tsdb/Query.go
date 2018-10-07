@@ -1,6 +1,6 @@
 package main
 
-type TsdbQuery struct{
+type TsdbQuery struct {
 	HumanLabel       []byte
 	HumanDescription []byte
 
