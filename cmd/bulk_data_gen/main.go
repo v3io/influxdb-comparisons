@@ -53,6 +53,9 @@ var (
 
 	seed  int64
 	debug int
+
+	outputFile string
+	onlyOutputToCsv bool
 )
 
 // Parse args:
@@ -71,6 +74,8 @@ func init() {
 	flag.UintVar(&interleavedGenerationGroupID, "interleaved-generation-group-id", 0, "Group (0-indexed) to perform round-robin serialization within. Use this to scale up data generation to multiple processes.")
 	flag.UintVar(&interleavedGenerationGroups, "interleaved-generation-groups", 1, "The number of round-robin serialization groups. Use this to scale up data generation to multiple processes.")
 
+	flag.StringVar(&outputFile, "output-file", "", "CSV file path to output the data in addition to Stdout")
+	flag.BoolVar(&onlyOutputToCsv, "only-csv", false, "Indicates whether to output only to csv rather than csv and stdout")
 	flag.Parse()
 
 	if !(interleavedGenerationGroupID < interleavedGenerationGroups) {
@@ -112,6 +117,23 @@ func main() {
 	rand.Seed(seed)
 
 	out := bufio.NewWriterSize(os.Stdout, 4<<20)
+
+	var csvWriter *bufio.Writer
+
+	if onlyOutputToCsv && outputFile == ""{
+		log.Fatal("When outputting only to csv file, an output file has to be specified")
+	}
+	if outputFile != ""{
+		f, err := os.Create(outputFile)
+		if err != nil{
+			log.Fatal(err)
+		}
+
+		csvWriter = bufio.NewWriter(f)
+		defer csvWriter.Flush()
+		defer f.Close()
+	}
+
 	defer out.Flush()
 
 	var sim common.Simulator
@@ -170,11 +192,18 @@ func main() {
 		// in the default case this is always true
 		if currentInterleavedGroup == interleavedGenerationGroupID {
 			//println("printing")
-			err := serializer.SerializePoint(out, point)
-			if err != nil {
-				log.Fatal(err)
+			if !onlyOutputToCsv {
+				err := serializer.SerializePoint(out, point)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-
+			if csvWriter !=nil {
+				err := serializer.SerializeToCSV(csvWriter, point)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 		}
 		point.Reset()
 

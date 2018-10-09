@@ -56,3 +56,39 @@ func (s *SerializerTSDB) SerializeSize(w io.Writer, points int64, values int64) 
 	//return serializeSizeInText(w, points, values)
 	return nil
 }
+
+func (s *SerializerTSDB) SerializeToCSV(w io.Writer, p *Point) error{
+
+	labels := make([]byte, 0, 256)
+	buf := scratchBufPool.Get().([]byte)
+	metricType := fmt.Sprintf("measurement=%s", p.MeasurementName)
+	labels = append(labels, byte('"'))
+	labels = append(labels, []byte(metricType)...)
+
+	for i := 0; i < len(p.TagKeys); i++ {
+		labels = append(labels, byte(','))
+		labels = append(labels, p.TagKeys[i]...)
+		labels = append(labels, byte('='))
+		labels = append(labels, p.TagValues[i]...)
+	}
+	labels = append(labels, byte('"'))
+
+	for i := 0; i < len(p.FieldKeys); i++ {
+		buf = append(buf, []byte(fmt.Sprintf("%s_", p.MeasurementName))...)
+		buf = append(buf, p.FieldKeys[i]...)
+		buf = append(buf, byte(','))
+		buf = append(buf, labels...)
+		buf = append(buf, byte(','))
+		buf = fastFormatAppend(p.FieldValues[i], buf, false)
+		buf = append(buf, byte(','))
+		buf = fastFormatAppend(p.Timestamp.UnixNano()/int64(time.Millisecond), buf, true)
+		buf = append(buf, '\n')
+	}
+
+	_, err := w.Write(buf)
+
+	buf = buf[:0]
+	scratchBufPool.Put(buf)
+
+	return err
+}
