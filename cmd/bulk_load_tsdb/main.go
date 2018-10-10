@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/v3io/v3io-tsdb/pkg/aggregate"
 	tsdbConfig "github.com/v3io/v3io-tsdb/pkg/config"
 	"github.com/v3io/v3io-tsdb/pkg/tsdb"
+	"github.com/v3io/v3io-tsdb/pkg/tsdb/schema"
 	tsdbUtils "github.com/v3io/v3io-tsdb/pkg/utils"
 	"log"
 	"os"
@@ -104,15 +104,15 @@ func main() {
 
 	createTSDB()
 
-	//tsdbAdapter, err := tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
-	//if err != nil {
-	//	log.Fatalf("failed to create TSDB adapter: %v", err)
-	//}
-	//
-	//tsdbAppender, err = tsdbAdapter.Appender()
-	//if err != nil {
-	//	log.Fatalf("failed to create tsdb appender: %v", err)
-	//}
+	tsdbAdapter, err := tsdb.NewV3ioAdapter(v3ioConf, nil, nil)
+	if err != nil {
+		log.Fatalf("failed to create TSDB adapter: %v", err)
+	}
+
+	tsdbAppender, err = tsdbAdapter.Appender()
+	if err != nil {
+		log.Fatalf("failed to create tsdb appender: %v", err)
+	}
 
 	for i := 0; i < workers; i++ {
 		workersGroup.Add(1)
@@ -240,49 +240,12 @@ func createTSDB() {
 		adapter.DeleteDB(true, true, 0, 0)
 	}
 
-	rollups, err := aggregate.AggregatorsToStringList("")
+	schm, err := schema.NewSchema(v3ioConf, "6/m", "1m", "max")
 	if err != nil {
-		log.Fatal(err)
-	}
-	defaultRollup := tsdbConfig.Rollup{
-		Aggregators:            rollups,
-		AggregatorsGranularity: "1m",
-		StorageClass:           "local",
-		SampleRetention:        0,
-		LayerRetentionTime:     "1y",
+		log.Fatal("could not ctreate schema", err)
 	}
 
-	tableSchema := tsdbConfig.TableSchema{
-		Version:              0,
-		RollupLayers:         []tsdbConfig.Rollup{defaultRollup},
-		ShardingBucketsCount: 8,
-		PartitionerInterval:  "290h",
-		ChunckerInterval:     "10h",
-	}
-
-	fields, err := aggregate.SchemaFieldFromString(rollups, "v")
-	if err != nil {
-		log.Fatal("Failed to create aggregators list", err)
-	}
-	fields = append(fields, tsdbConfig.SchemaField{Name: "_name", Type: "string", Nullable: false, Items: ""})
-
-	partitionSchema := tsdbConfig.PartitionSchema{
-		Version:                tableSchema.Version,
-		Aggregators:            rollups,
-		AggregatorsGranularity: "1m",
-		StorageClass:           "local",
-		SampleRetention:        0,
-		ChunckerInterval:       tableSchema.ChunckerInterval,
-		PartitionerInterval:    tableSchema.PartitionerInterval,
-	}
-
-	schema := &tsdbConfig.Schema{
-		TableSchemaInfo:     tableSchema,
-		PartitionSchemaInfo: partitionSchema,
-		Fields:              fields,
-	}
-
-	err = tsdb.CreateTSDB(v3ioConf, schema)
+	err = tsdb.CreateTSDB(v3ioConf, schm)
 	if err != nil {
 		log.Fatal("could not ctreate tsdb", err)
 	}

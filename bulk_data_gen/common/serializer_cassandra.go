@@ -97,6 +97,6 @@ func (s *SerializerCassandra) SerializeSize(w io.Writer, points int64, values in
 	return serializeSizeInText(w, points, values)
 }
 
-func (s *SerializerCassandra) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerCassandra) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

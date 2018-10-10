@@ -87,6 +87,6 @@ func (s *SerializerOpenTSDB) SerializeSize(w io.Writer, points int64, values int
 	return nil
 }
 
-func (s *SerializerOpenTSDB) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerOpenTSDB) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

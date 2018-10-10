@@ -57,7 +57,7 @@ func (s *SerializerTSDB) SerializeSize(w io.Writer, points int64, values int64) 
 	return nil
 }
 
-func (s *SerializerTSDB) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerTSDB) SerializeToCSV(w io.Writer, p *Point) error {
 
 	labels := make([]byte, 0, 256)
 	buf := scratchBufPool.Get().([]byte)

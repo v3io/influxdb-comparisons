@@ -72,7 +72,7 @@ func (s *SerializerTimescaleSql) SerializeSize(w io.Writer, points int64, values
 	return serializeSizeInText(w, points, values)
 }
 
-func (s *SerializerTimescaleSql) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerTimescaleSql) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }
 
@@ -151,6 +151,6 @@ func (s *SerializerTimescaleBin) SerializeSize(w io.Writer, points int64, values
 	return nil
 }
 
-func (s *SerializerTimescaleBin) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerTimescaleBin) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

@@ -81,6 +81,6 @@ func (s *SerializerElastic) SerializeSize(w io.Writer, points int64, values int6
 	return nil
 }
 
-func (s *SerializerElastic) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerElastic) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

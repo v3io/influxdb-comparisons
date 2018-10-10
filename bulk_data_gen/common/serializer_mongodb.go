@@ -133,6 +133,6 @@ func (s *SerializerMongo) SerializeSize(w io.Writer, points int64, values int64)
 	return nil
 }
 
-func (s *SerializerMongo) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *SerializerMongo) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

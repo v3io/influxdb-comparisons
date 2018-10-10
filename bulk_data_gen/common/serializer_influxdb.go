@@ -69,6 +69,6 @@ func (s *serializerInflux) SerializeSize(w io.Writer, points int64, values int64
 	return serializeSizeInText(w, points, values)
 }
 
-func (s *serializerInflux) SerializeToCSV(w io.Writer, p *Point) error{
+func (s *serializerInflux) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

@@ -54,7 +54,7 @@ var (
 	seed  int64
 	debug int
 
-	outputFile string
+	outputFile      string
 	onlyOutputToCsv bool
 )
 
@@ -120,12 +120,12 @@ func main() {
 
 	var csvWriter *bufio.Writer
 
-	if onlyOutputToCsv && outputFile == ""{
+	if onlyOutputToCsv && outputFile == "" {
 		log.Fatal("When outputting only to csv file, an output file has to be specified")
 	}
-	if outputFile != ""{
+	if outputFile != "" {
 		f, err := os.Create(outputFile)
-		if err != nil{
+		if err != nil {
 			log.Fatal(err)
 		}
 
@@ -198,7 +198,7 @@ func main() {
 					log.Fatal(err)
 				}
 			}
-			if csvWriter !=nil {
+			if csvWriter != nil {
 				err := serializer.SerializeToCSV(csvWriter, point)
 				if err != nil {
 					log.Fatal(err)
