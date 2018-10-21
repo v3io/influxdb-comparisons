@@ -9,7 +9,7 @@ var (
 )
 
 type TimeWindow struct {
-	Start time.Time
+	Start    time.Time
 	Duration time.Duration
 }
 

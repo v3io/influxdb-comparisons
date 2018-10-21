@@ -8,6 +8,7 @@ Current databases supported:
 + Cassandra ([InfluxDB Tops Cassandra in Time-Series Data & Metrics Benchmark](https://www.influxdata.com/influxdb-vs-cassandra-benchmark-time-series-metrics/))
 + MongoDB ([InfluxDB is 27x Faster vs MongoDB for Time-Series Workloads](https://www.influxdata.com/influxdb-is-27x-faster-vs-mongodb-for-time-series-workloads/))
 + OpenTSDB
++ V3IO TSDB
 
 ## Testing Methodology
 

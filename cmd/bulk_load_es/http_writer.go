@@ -17,7 +17,7 @@ type HTTPWriterConfig struct {
 	Host string
 
 	// Name of the target database into which points will be written.
-//	Database string
+	//	Database string
 }
 
 // HTTPWriter is a Writer that writes to an InfluxDB HTTP server.
@@ -74,7 +74,9 @@ func (w *HTTPWriter) WriteLineProtocol(body []byte, isGzip bool) (int64, error) 
 	}
 
 	// anonymous type to get the 'errors' field from the response:
-	errorFlag := struct{ Errors bool `json:"errors"` }{}
+	errorFlag := struct {
+		Errors bool `json:"errors"`
+	}{}
 
 	if err == nil {
 		err = json.Unmarshal(resp.Body(), &errorFlag)

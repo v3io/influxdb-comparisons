@@ -10,6 +10,7 @@ import (
 type Serializer interface {
 	SerializePoint(w io.Writer, p *Point) error
 	SerializeSize(w io.Writer, points int64, values int64) error
+	SerializeToCSV(w io.Writer, p *Point) error
 }
 
 const DatasetSizeMarker = "dataset-size:"

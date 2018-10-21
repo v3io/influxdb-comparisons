@@ -27,7 +27,7 @@ func newInfluxDashboard(lang Language, dbConfig bulkQuerygen.DatabaseConfig, int
 	return &InfluxDashboard{
 		InfluxCommon:  *newInfluxCommon(lang, dbConfig[bulkQuerygen.DatabaseName], interval, scaleVar),
 		ClustersCount: clustersCount,
-		TimeWindow: bulkQuerygen.TimeWindow{interval.Start, duration},
+		TimeWindow:    bulkQuerygen.TimeWindow{interval.Start, duration},
 	}
 }
 
@@ -41,7 +41,7 @@ func (d *InfluxDashboard) Dispatch(i int) bulkQuerygen.Query {
 func (d *InfluxDashboard) DispatchCommon(i int) (*bulkQuerygen.HTTPQuery, *bulkQuerygen.TimeInterval) {
 	q := bulkQuerygen.NewHTTPQuery() // from pool
 	var interval bulkQuerygen.TimeInterval
-	if (bulkQuerygen.TimeWindowShift > 0) {
+	if bulkQuerygen.TimeWindowShift > 0 {
 		interval = d.TimeWindow.SlidingWindow(&d.AllInterval)
 	} else {
 		interval = d.AllInterval.RandWindow(d.Duration)

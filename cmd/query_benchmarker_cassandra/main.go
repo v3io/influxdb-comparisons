@@ -14,13 +14,11 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
-	"github.com/influxdata/influxdb-comparisons/util/report"
 	"io"
 	"log"
 	"os"
 	"runtime/pprof"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -228,34 +226,34 @@ func main() {
 		f.Close()
 	}
 
-	if reportHost != "" {
-		//append db specific tags to custom tags
-		reportTags = append(reportTags, [2]string{"aggregation_plan", aggrPlanLabel})
-		reportTags = append(reportTags, [2]string{"subquery_workers", strconv.Itoa(subQueryParallelism)})
-		reportTags = append(reportTags, [2]string{"request_timeout", strconv.Itoa(int(requestTimeout.Seconds()))})
-		reportTags = append(reportTags, [2]string{"client_side_index_timeout", strconv.Itoa(int(csiTimeout.Seconds()))})
-
-		reportParams := &report.QueryReportParams{
-			ReportParams: report.ReportParams{
-				DBType:             "Cassandra",
-				ReportDatabaseName: reportDatabase,
-				ReportHost:         reportHost,
-				ReportUser:         reportUser,
-				ReportPassword:     reportPassword,
-				ReportTags:         reportTags,
-				Hostname:           reportHostname,
-				DestinationUrl:     daemonUrl,
-				Workers:            workers,
-				ItemLimit:          int(limit),
-			},
-			BurnIn: int64(burnIn),
-		}
-		err = report.ReportQueryResult(reportParams, reportQueryStat.Min, reportQueryStat.Mean, reportQueryStat.Max, reportQueryStat.Count, wallTook)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	//if reportHost != "" {
+	//	//append db specific tags to custom tags
+	//	reportTags = append(reportTags, [2]string{"aggregation_plan", aggrPlanLabel})
+	//	reportTags = append(reportTags, [2]string{"subquery_workers", strconv.Itoa(subQueryParallelism)})
+	//	reportTags = append(reportTags, [2]string{"request_timeout", strconv.Itoa(int(requestTimeout.Seconds()))})
+	//	reportTags = append(reportTags, [2]string{"client_side_index_timeout", strconv.Itoa(int(csiTimeout.Seconds()))})
+	//
+	//	reportParams := &report.QueryReportParams{
+	//		ReportParams: report.ReportParams{
+	//			DBType:             "Cassandra",
+	//			ReportDatabaseName: reportDatabase,
+	//			ReportHost:         reportHost,
+	//			ReportUser:         reportUser,
+	//			ReportPassword:     reportPassword,
+	//			ReportTags:         reportTags,
+	//			Hostname:           reportHostname,
+	//			DestinationUrl:     daemonUrl,
+	//			Workers:            workers,
+	//			ItemLimit:          int(limit),
+	//		},
+	//		BurnIn: int64(burnIn),
+	//	}
+	//	err = report.ReportQueryResult(reportParams, reportQueryStat.Min, reportQueryStat.Mean, reportQueryStat.Max, reportQueryStat.Count, wallTook)
+	//
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 }
 
 // scan reads encoded Queries and places them onto the workqueue.

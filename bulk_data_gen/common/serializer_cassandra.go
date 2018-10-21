@@ -96,3 +96,7 @@ func typeNameForCassandra(v interface{}) string {
 func (s *SerializerCassandra) SerializeSize(w io.Writer, points int64, values int64) error {
 	return serializeSizeInText(w, points, values)
 }
+
+func (s *SerializerCassandra) SerializeToCSV(w io.Writer, p *Point) error {
+	return nil
+}

@@ -27,7 +27,7 @@ func ND(mean, stddev float64) *NormalDistribution {
 var localRand = rand.New(rand.NewSource(1))
 
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
-func Seed (seed int64) {
+func Seed(seed int64) {
 	localRand.Seed(seed)
 }
 

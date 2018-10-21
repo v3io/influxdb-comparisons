@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/valyala/fasthttp"
+	"net"
 	"net/url"
 	"os"
 	"time"
-	"net"
-	"github.com/valyala/fasthttp"
 )
 
 var bytesSlash = []byte("/") // heap optimization

@@ -12,7 +12,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/mongodb"
-	"github.com/influxdata/influxdb-comparisons/util/report"
 	"gopkg.in/mgo.v2"
 	"io"
 	"log"
@@ -177,31 +176,31 @@ func main() {
 		pprof.WriteHeapProfile(f)
 		f.Close()
 	}
-	if reportHost != "" {
-
-		reportParams := &report.QueryReportParams{
-			ReportParams: report.ReportParams{
-				DBType:             "MongoDB",
-				ReportDatabaseName: reportDatabase,
-				ReportHost:         reportHost,
-				ReportUser:         reportUser,
-				ReportPassword:     reportPassword,
-				ReportTags:         reportTags,
-				Hostname:           reportHostname,
-				DestinationUrl:     daemonUrl,
-				Workers:            workers,
-				ItemLimit:          int(limit),
-			},
-			BurnIn: int64(burnIn),
-		}
-
-		stat := statMapping[allQueriesLabel]
-		err = report.ReportQueryResult(reportParams, stat.Min, stat.Mean, stat.Max, stat.Count, wallTook)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	//if reportHost != "" {
+	//
+	//	reportParams := &report.QueryReportParams{
+	//		ReportParams: report.ReportParams{
+	//			DBType:             "MongoDB",
+	//			ReportDatabaseName: reportDatabase,
+	//			ReportHost:         reportHost,
+	//			ReportUser:         reportUser,
+	//			ReportPassword:     reportPassword,
+	//			ReportTags:         reportTags,
+	//			Hostname:           reportHostname,
+	//			DestinationUrl:     daemonUrl,
+	//			Workers:            workers,
+	//			ItemLimit:          int(limit),
+	//		},
+	//		BurnIn: int64(burnIn),
+	//	}
+	//
+	//	stat := statMapping[allQueriesLabel]
+	//	err = report.ReportQueryResult(reportParams, stat.Min, stat.Mean, stat.Max, stat.Count, wallTook)
+	//
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 }
 
 // scan reads encoded Queries and places them onto the workqueue.

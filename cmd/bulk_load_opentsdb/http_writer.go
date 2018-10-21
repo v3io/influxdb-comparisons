@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	BackoffError error = fmt.Errorf("backpressure is needed")
+	BackoffError      error  = fmt.Errorf("backpressure is needed")
 	backoffMagicWords []byte = []byte("engine: cache maximum memory size exceeded")
 )
 
@@ -50,7 +50,7 @@ func NewHTTPWriter(c HTTPWriterConfig) LineProtocolWriter {
 }
 
 var (
-	post      = []byte("POST")
+	post                  = []byte("POST")
 	applicationJsonHeader = []byte("application/json")
 )
 
@@ -73,7 +73,7 @@ func (w *HTTPWriter) WriteLineProtocol(body []byte) (int64, error) {
 		sc := resp.StatusCode()
 		//if sc == 500 && backpressurePred(resp.Body()) {
 		//	err = BackoffError
-		if (sc != fasthttp.StatusNoContent && sc != fasthttp.StatusOK) {
+		if sc != fasthttp.StatusNoContent && sc != fasthttp.StatusOK {
 			err = fmt.Errorf("Invalid write response (status %d): %s", sc, resp.Body())
 		}
 	}

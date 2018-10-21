@@ -72,6 +72,10 @@ func (s *SerializerTimescaleSql) SerializeSize(w io.Writer, points int64, values
 	return serializeSizeInText(w, points, values)
 }
 
+func (s *SerializerTimescaleSql) SerializeToCSV(w io.Writer, p *Point) error {
+	return nil
+}
+
 // SerializeTimeScaleBin writes Point data to the given writer, conforming to the
 // Binary GOP encoded format to write
 //
@@ -144,5 +148,9 @@ func (t *SerializerTimescaleBin) SerializePoint(w io.Writer, p *Point) (err erro
 
 func (s *SerializerTimescaleBin) SerializeSize(w io.Writer, points int64, values int64) error {
 	//return serializeSizeInText(w, points, values)
+	return nil
+}
+
+func (s *SerializerTimescaleBin) SerializeToCSV(w io.Writer, p *Point) error {
 	return nil
 }

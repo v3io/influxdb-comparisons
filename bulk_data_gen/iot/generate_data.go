@@ -11,7 +11,7 @@ type IotSimulatorConfig struct {
 	Start time.Time
 	End   time.Time
 
-	SmartHomeCount int64
+	SmartHomeCount  int64
 	SmartHomeOffset int64
 }
 

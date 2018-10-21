@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/mongodb"
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/opentsdb"
 	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/timescaledb"
+	"github.com/influxdata/influxdb-comparisons/bulk_query_gen/tsdb"
 	"log"
 	"math/rand"
 	"os"
@@ -64,6 +65,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":            mongodb.NewMongoDevopsSingleHost,
 			"opentsdb":         opentsdb.NewOpenTSDBDevopsSingleHost,
 			"timescaledb":      timescaledb.NewTimescaleDevopsSingleHost,
+			"tsdb":             tsdb.NewTSDBDevopsSingleHost,
 		},
 		DevOpsOneHostTwelveHours: {
 			"cassandra":        cassandra.NewCassandraDevopsSingleHost12hr,
@@ -73,6 +75,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":            mongodb.NewMongoDevopsSingleHost12hr,
 			"opentsdb":         opentsdb.NewOpenTSDBDevopsSingleHost12hr,
 			"timescaledb":      timescaledb.NewTimescaleDevopsSingleHost12hr,
+			"tsdb":             tsdb.NewTSDBDevopsSingleHost12hr,
 		},
 		DevOpsEightHostsOneHour: {
 			"cassandra":        cassandra.NewCassandraDevops8Hosts,
@@ -82,6 +85,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"mongo":            mongodb.NewMongoDevops8Hosts1Hr,
 			"opentsdb":         opentsdb.NewOpenTSDBDevops8Hosts,
 			"timescaledb":      timescaledb.NewTimescaleDevops8Hosts1Hr,
+			"tsdb":             tsdb.NewTSDBDevops8Hosts,
 		},
 		DevOpsGroupBy: {
 			"cassandra":        cassandra.NewCassandraDevopsGroupBy,
@@ -89,6 +93,7 @@ var useCaseMatrix = map[string]map[string]map[string]bulkQueryGen.QueryGenerator
 			"influx-flux-http": influxdb.NewFluxDevopsGroupBy,
 			"influx-http":      influxdb.NewInfluxQLDevopsGroupBy,
 			"timescaledb":      timescaledb.NewTimescaleDevopsGroupby,
+			"tsdb":             tsdb.NewTSDBDevopsGroupBy,
 		},
 	},
 	Iot: {
@@ -143,9 +148,9 @@ var (
 	timestampStartStr string
 	timestampEndStr   string
 
-	timestampStart time.Time
-	timestampEnd   time.Time
-	queryInterval  time.Duration
+	timestampStart  time.Time
+	timestampEnd    time.Time
+	queryInterval   time.Duration
 	timeWindowShift time.Duration
 
 	seed  int64
@@ -254,10 +259,10 @@ func init() {
 	if timeWindowShift > 0 {
 		bulkQueryGen.TimeWindowShift = timeWindowShift // global
 		queryCount = int(timestampEnd.Sub(timestampStart).Seconds() / timeWindowShift.Seconds())
-		if (queryType == DashboardAll) {
+		if queryType == DashboardAll {
 			queryCount *= 18
 		}
-		log.Printf("%v queries will be generated to cover time interval using %v shift", queryCount,  timeWindowShift)
+		log.Printf("%v queries will be generated to cover time interval using %v shift", queryCount, timeWindowShift)
 	}
 
 	// the default seed is the current timestamp:

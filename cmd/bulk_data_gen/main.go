@@ -27,7 +27,7 @@ import (
 )
 
 // Output data format choices:
-var formatChoices = []string{"influx-bulk", "es-bulk", "cassandra", "mongo", "opentsdb", "timescaledb-sql", "timescaledb-copyFrom"}
+var formatChoices = []string{"influx-bulk", "es-bulk", "cassandra", "mongo", "opentsdb", "timescaledb-sql", "timescaledb-copyFrom", "tsdb"}
 
 // Use case choices:
 var useCaseChoices = []string{"devops", "iot", "dashboard"}
@@ -40,7 +40,7 @@ var (
 	format  string
 	useCase string
 
-	scaleVar int64
+	scaleVar       int64
 	scaleVarOffset int64
 
 	timestampStartStr string
@@ -54,6 +54,9 @@ var (
 
 	seed  int64
 	debug int
+
+	outputFile      string
+	onlyOutputToCsv bool
 )
 
 // Parse args:
@@ -73,6 +76,8 @@ func init() {
 	flag.UintVar(&interleavedGenerationGroupID, "interleaved-generation-group-id", 0, "Group (0-indexed) to perform round-robin serialization within. Use this to scale up data generation to multiple processes.")
 	flag.UintVar(&interleavedGenerationGroups, "interleaved-generation-groups", 1, "The number of round-robin serialization groups. Use this to scale up data generation to multiple processes.")
 
+	flag.StringVar(&outputFile, "output-file", "", "CSV file path to output the data in addition to Stdout")
+	flag.BoolVar(&onlyOutputToCsv, "only-csv", false, "Indicates whether to output only to csv rather than csv and stdout")
 	flag.Parse()
 
 	if !(interleavedGenerationGroupID < interleavedGenerationGroups) {
@@ -114,6 +119,23 @@ func main() {
 	common.Seed(seed)
 
 	out := bufio.NewWriterSize(os.Stdout, 4<<20)
+
+	var csvWriter *bufio.Writer
+
+	if onlyOutputToCsv && outputFile == "" {
+		log.Fatal("When outputting only to csv file, an output file has to be specified")
+	}
+	if outputFile != "" {
+		f, err := os.Create(outputFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		csvWriter = bufio.NewWriter(f)
+		defer csvWriter.Flush()
+		defer f.Close()
+	}
+
 	defer out.Flush()
 
 	var sim common.Simulator
@@ -124,7 +146,7 @@ func main() {
 			Start: timestampStart,
 			End:   timestampEnd,
 
-			HostCount: scaleVar,
+			HostCount:  scaleVar,
 			HostOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
@@ -133,7 +155,7 @@ func main() {
 			Start: timestampStart,
 			End:   timestampEnd,
 
-			HostCount: scaleVar,
+			HostCount:  scaleVar,
 			HostOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
@@ -142,7 +164,7 @@ func main() {
 			Start: timestampStart,
 			End:   timestampEnd,
 
-			SmartHomeCount: scaleVar,
+			SmartHomeCount:  scaleVar,
 			SmartHomeOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
@@ -166,6 +188,8 @@ func main() {
 		serializer = common.NewSerializerTimescaleSql()
 	case "timescaledb-copyFrom":
 		serializer = common.NewSerializerTimescaleBin()
+	case "tsdb":
+		serializer = common.NewSerializerTSDB()
 	default:
 		panic("unreachable")
 	}
@@ -181,11 +205,18 @@ func main() {
 		// in the default case this is always true
 		if currentInterleavedGroup == interleavedGenerationGroupID {
 			//println("printing")
-			err := serializer.SerializePoint(out, point)
-			if err != nil {
-				log.Fatal(err)
+			if !onlyOutputToCsv {
+				err := serializer.SerializePoint(out, point)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-
+			if csvWriter != nil {
+				err := serializer.SerializeToCSV(csvWriter, point)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 		}
 		point.Reset()
 
