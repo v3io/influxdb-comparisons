@@ -43,13 +43,14 @@ type DevopsSimulatorConfig struct {
 	Start time.Time
 	End   time.Time
 
-	HostCount int64
+	HostCount  int64
+	HostOffset int64
 }
 
 func (d *DevopsSimulatorConfig) ToSimulator() *DevopsSimulator {
 	hostInfos := make([]Host, d.HostCount)
 	for i := 0; i < len(hostInfos); i++ {
-		hostInfos[i] = NewHost(i, d.Start)
+		hostInfos[i] = NewHost(i, int(d.HostOffset), d.Start)
 	}
 
 	epochs := d.End.Sub(d.Start).Nanoseconds() / EpochDuration.Nanoseconds()

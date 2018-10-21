@@ -8,15 +8,15 @@ type TSDBDevopsSingleHost struct {
 	TSDBDevops
 }
 
-func NewTSDBDevopsSingleHost(dbConfig bulkQuerygen.DatabaseConfig, start, end time.Time) bulkQuerygen.QueryGenerator {
-	underlying := newTSDBDevopsCommon(dbConfig, start, end).(*TSDBDevops)
+func NewTSDBDevopsSingleHost(dbConfig bulkQuerygen.DatabaseConfig, interval bulkQuerygen.TimeInterval, duration time.Duration, scaleVar int) bulkQuerygen.QueryGenerator {
+	underlying := newTSDBDevopsCommon(dbConfig, interval, duration, scaleVar).(*TSDBDevops)
 	return &TSDBDevopsSingleHost{
 		TSDBDevops: *underlying,
 	}
 }
 
-func (d *TSDBDevopsSingleHost) Dispatch(_, scaleVar int) bulkQuerygen.Query {
+func (d *TSDBDevopsSingleHost) Dispatch(i int) bulkQuerygen.Query {
 	q := NewTSDBQuery() // from pool
-	d.MaxCPUUsageHourByMinuteOneHost(q, scaleVar)
+	d.MaxCPUUsageHourByMinuteOneHost(q)
 	return q
 }

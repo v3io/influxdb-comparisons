@@ -17,10 +17,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/common"
+	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/dashboard"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/devops"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/iot"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -30,7 +30,7 @@ import (
 var formatChoices = []string{"influx-bulk", "es-bulk", "cassandra", "mongo", "opentsdb", "timescaledb-sql", "timescaledb-copyFrom", "tsdb"}
 
 // Use case choices:
-var useCaseChoices = []string{"devops", "iot"}
+var useCaseChoices = []string{"devops", "iot", "dashboard"}
 
 // Program option vars:
 var (
@@ -40,7 +40,8 @@ var (
 	format  string
 	useCase string
 
-	scaleVar int64
+	scaleVar       int64
+	scaleVarOffset int64
 
 	timestampStartStr string
 	timestampEndStr   string
@@ -64,6 +65,7 @@ func init() {
 
 	flag.StringVar(&useCase, "use-case", useCaseChoices[0], fmt.Sprintf("Use case to model. (choices: %s)", strings.Join(useCaseChoices, ", ")))
 	flag.Int64Var(&scaleVar, "scale-var", 1, "Scaling variable specific to the use case.")
+	flag.Int64Var(&scaleVarOffset, "scale-var-offset", 0, "Scaling variable offset specific to the use case.")
 
 	flag.StringVar(&timestampStartStr, "timestamp-start", common.DefaultDateTimeStart, "Beginning timestamp (RFC3339).")
 	flag.StringVar(&timestampEndStr, "timestamp-end", common.DefaultDateTimeEnd, "Ending timestamp (RFC3339).")
@@ -114,7 +116,7 @@ func init() {
 }
 
 func main() {
-	rand.Seed(seed)
+	common.Seed(seed)
 
 	out := bufio.NewWriterSize(os.Stdout, 4<<20)
 
@@ -139,20 +141,31 @@ func main() {
 	var sim common.Simulator
 
 	switch useCase {
-	case "devops":
+	case useCaseChoices[0]:
 		cfg := &devops.DevopsSimulatorConfig{
 			Start: timestampStart,
 			End:   timestampEnd,
 
-			HostCount: scaleVar,
+			HostCount:  scaleVar,
+			HostOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
-	case "iot":
+	case useCaseChoices[2]:
+		cfg := &dashboard.DashboardSimulatorConfig{
+			Start: timestampStart,
+			End:   timestampEnd,
+
+			HostCount:  scaleVar,
+			HostOffset: scaleVarOffset,
+		}
+		sim = cfg.ToSimulator()
+	case useCaseChoices[1]:
 		cfg := &iot.IotSimulatorConfig{
 			Start: timestampStart,
 			End:   timestampEnd,
 
-			SmartHomeCount: scaleVar,
+			SmartHomeCount:  scaleVar,
+			SmartHomeOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
 	default:

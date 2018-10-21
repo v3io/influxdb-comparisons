@@ -12,7 +12,6 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
-	"github.com/influxdata/influxdb-comparisons/util/report"
 	"io"
 	"log"
 	"os"
@@ -175,31 +174,31 @@ func main() {
 		f.Close()
 	}
 
-	if reportHost != "" {
-
-		reportParams := &report.QueryReportParams{
-			ReportParams: report.ReportParams{
-				DBType:             "Cassandra",
-				ReportDatabaseName: reportDatabase,
-				ReportHost:         reportHost,
-				ReportUser:         reportUser,
-				ReportPassword:     reportPassword,
-				ReportTags:         reportTags,
-				Hostname:           reportHostname,
-				DestinationUrl:     csvDaemonUrls,
-				Workers:            workers,
-				ItemLimit:          int(limit),
-			},
-			BurnIn: int64(burnIn),
-		}
-
-		stat := statMapping[allQueriesLabel]
-		err = report.ReportQueryResult(reportParams, stat.Min, stat.Mean, stat.Max, stat.Count, wallTook)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	//if reportHost != "" {
+	//
+	//	reportParams := &report.QueryReportParams{
+	//		ReportParams: report.ReportParams{
+	//			DBType:             "Cassandra",
+	//			ReportDatabaseName: reportDatabase,
+	//			ReportHost:         reportHost,
+	//			ReportUser:         reportUser,
+	//			ReportPassword:     reportPassword,
+	//			ReportTags:         reportTags,
+	//			Hostname:           reportHostname,
+	//			DestinationUrl:     csvDaemonUrls,
+	//			Workers:            workers,
+	//			ItemLimit:          int(limit),
+	//		},
+	//		BurnIn: int64(burnIn),
+	//	}
+	//
+	//	stat := statMapping[allQueriesLabel]
+	//	err = report.ReportQueryResult(reportParams, stat.Min, stat.Mean, stat.Max, stat.Count, wallTook)
+	//
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 }
 
 // scan reads encoded Queries and places them onto the workqueue.
